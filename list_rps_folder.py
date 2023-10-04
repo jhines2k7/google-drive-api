@@ -2,6 +2,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
+import datetime
 
 def get_service(api_name, api_version, scopes, key_file_location):
     """Get a service that communicates to a Google API.
@@ -36,27 +37,38 @@ def main():
     key_file_location = 'service-account.json'
 
     try:
+        folder_name = 'rock-paper-scissors'
         # Authenticate and construct service.
         service = get_service(
             api_name='drive',
             api_version='v3',
             scopes=[scope],
             key_file_location=key_file_location)
+        
+        results = service.files().list(q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'").execute()
+        folders = results.get('files', [])
 
-        folder_id = '1sBiKii7SMjq4G2ar3qkTbQHLOlhwGelH'
+        # Print the folder's ID if found
+        if len(folders) > 0:
+            folder_id = folders[0]['id']
+            print(folders[0]['id'])
+        else:
+            print("Folder not found.")
+
         query = f"'{folder_id}' in parents"
 
         # Call the Drive v3 API
         results = service.files().list(
-            q=query, spaces='drive', fields="nextPageToken, files(id, name)", pageToken=None).execute()
-        items = results.get('files', [])
+            q=query, spaces='drive', fields="nextPageToken, files(id, name, createdTime)", pageToken=None).execute()
+        files = results.get('files', [])
 
-        if not items:
+        if not files:
             print('No files found.')
             return
-        print('Files:')
-        for item in items:
-            print(u'{0} ({1})'.format(item['name'], item['id']))
+        for file in files:
+            file_name = file['name']
+            created_time = datetime.datetime.strptime(file['createdTime'], "%Y-%m-%dT%H:%M:%S.%fZ")
+            print(f"File Name: {file_name}, Created Time: {created_time}")
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
         print(f'An error occurred: {error}')

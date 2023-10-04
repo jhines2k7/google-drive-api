@@ -56,19 +56,20 @@ def main():
 
         # Download each file from the folder
         for file in files:
-            file_id = file['id']
-            file_name = file['name']
-            file_path = os.path.join(download_dir, file_name)
+            request_file = service.files().get_media(fileId=file['id'])
+            # Get the file metadata
+            file_metadata = service.files().get(fileId=file['id']).execute()
+            filename = file_metadata['name']
 
-            request = service.files().get_media(fileId=file_id)
-            fh = io.FileIO(file_path, 'wb')
-            downloader = MediaIoBaseDownload(fh, request)
-        
-            print(f'Downloading file: {file_name}')
-            print(f'File {file_name} downloaded successfully!')
+            # Download the file content
+            fh = open(os.path.join("contracts", filename), 'wb')
+            downloader = MediaIoBaseDownload(fh, request_file)
+
             done = False
-        while done is False:
-            status, done = downloader.next_chunk()
+            while done is False:
+                status, done = downloader.next_chunk()
+
+            print('File downloaded successfully.')
 
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
