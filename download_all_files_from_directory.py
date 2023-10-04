@@ -5,6 +5,7 @@ from google.oauth2 import service_account
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.http import MediaIoBaseDownload
 import io
+import os
 
 def get_service(api_name, api_version, scopes, key_file_location):
     """Get a service that communicates to a Google API.
@@ -46,16 +47,29 @@ def main():
             key_file_location=key_file_location)
 
         # Call the Drive v3 API
-        request_file = service.files().get_media(fileId="1IflBBDLHCdxaD9tgywI3NFo_AV-O0K9i")
-        file = io.BytesIO()
-        downloader = MediaIoBaseDownload(file, request_file)
-        done = False
+        # List all files in the folder
+        folder_id = '1sBiKii7SMjq4G2ar3qkTbQHLOlhwGelH'
+        download_dir = 'contracts'
+        results = service.files().list(q=f"'{folder_id}' in parents and trashed=false",
+                                   pageSize=1000, fields="nextPageToken, files(id, name)").execute()
+        files = results.get('files', [])
+
+        # Download each file from the folder
+        for file in files:
+            file_id = file['id']
+            file_name = file['name']
+            file_path = os.path.join(download_dir, file_name)
+
+            request = service.files().get_media(fileId=file_id)
+            fh = io.FileIO(file_path, 'wb')
+            downloader = MediaIoBaseDownload(fh, request)
+        
+            print(f'Downloading file: {file_name}')
+            print(f'File {file_name} downloaded successfully!')
+            done = False
         while done is False:
             status, done = downloader.next_chunk()
-            print(F'Download {int(status.progress() * 100)}.')
-        file_retrieved: str = file.getvalue()
-        with open(f"RPSContract.json", 'wb') as f:
-            f.write(file_retrieved)
+
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
         print(f'An error occurred: {error}')

@@ -49,7 +49,7 @@ def main():
         folder_id = '1sBiKii7SMjq4G2ar3qkTbQHLOlhwGelH'
         dir_path = '/root/rps-contracts/build/contracts'
 
-        for filename in os.listdor(dir_path):
+        for filename in os.listdir(dir_path):
             if filename.endswith(".json"):
                 file_metadata = { 'name': filename, 'parents': [folder_id] }
                 media = MediaFileUpload(os.path.join(dir_path, filename), mimetype='text/json')

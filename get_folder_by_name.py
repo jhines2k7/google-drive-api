@@ -1,10 +1,5 @@
-from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
-from googleapiclient.http import MediaFileUpload
-from googleapiclient.http import MediaIoBaseDownload
-import io
 
 def get_service(api_name, api_version, scopes, key_file_location):
     """Get a service that communicates to a Google API.
@@ -36,6 +31,9 @@ def main():
     # Define the auth scopes to request.
     scope = 'https://www.googleapis.com/auth/drive.file'
     key_file_location = 'service-account.json'
+    
+    # Specify the name of the folder you want to retrieve
+    folder_name = 'rock-paper-scissors'
 
     try:
         # Authenticate and construct service.
@@ -44,18 +42,17 @@ def main():
             api_version='v3',
             scopes=[scope],
             key_file_location=key_file_location)
-
+        
         # Call the Drive v3 API
-        request_file = service.files().get_media(fileId="1IflBBDLHCdxaD9tgywI3NFo_AV-O0K9i")
-        file = io.BytesIO()
-        downloader = MediaIoBaseDownload(file, request_file)
-        done = False
-        while done is False:
-            status, done = downloader.next_chunk()
-            print(F'Download {int(status.progress() * 100)}.')
-        file_retrieved: str = file.getvalue()
-        with open(f"RPSContract.json", 'wb') as f:
-            f.write(file_retrieved)
+        results = service.files().list(q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder'").execute()
+        folders = results.get('files', [])
+
+        # Print the folder's ID if found
+        if len(folders) > 0:
+            print(folders[0]['id'])
+        else:
+            print("Folder not found.")
+
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
         print(f'An error occurred: {error}')
