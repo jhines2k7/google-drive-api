@@ -45,10 +45,15 @@ def main():
             key_file_location=key_file_location)
 
         # Call the Drive v3 API
-        file_id = '1MwS7wDxGz1KZaun9nPqgpznaYXarrcqV'
-
-        service.files().delete(fileId=file_id).execute()
-        print(f'File with ID {file_id} has been deleted.')
+        file_ids = ['1FHRRtPQ0ePyFwdNkbW7nG0WcpZcKXazs',
+                    '1eJfZkNYQi4bmJhfCaFdQqCJ5httCq8Om',
+                    '12BH-H0mBXKlfX4-1JlzJkUuCrKwvk7dB',
+                    '1IflBBDLHCdxaD9tgywI3NFo_AV-O0K9i',
+                    '15ZYq1ESsy5Tgv_xLdGNAmGhOGaMRsU2P']
+        
+        for file_id in file_ids:
+            service.files().delete(fileId=file_id).execute()
+            print(f'File with ID {file_id} has been deleted.')
     except HttpError as error:
         # TODO(developer) - Handle errors from drive API.
         print(f'An error occurred: {error}')

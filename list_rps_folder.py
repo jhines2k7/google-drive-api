@@ -37,7 +37,7 @@ def main():
     key_file_location = 'service-account.json'
 
     try:
-        folder_name = 'rock-paper-scissors'
+        folder_name = 'rock-paper-scissors-v2'
         # Authenticate and construct service.
         service = get_service(
             api_name='drive',

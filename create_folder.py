@@ -46,7 +46,7 @@ def main():
 
         # Call the Drive v3 API
         # Define folder details
-        folder_metadata = {'name': 'rock-paper-scissors', 'mimeType': 'application/vnd.google-apps.folder'}
+        folder_metadata = {'name': 'rock-paper-scissors-v2', 'mimeType': 'application/vnd.google-apps.folder'}
 
         # Use the files().create() method to create the folder
         folder = service.files().create(body=folder_metadata, fields='id').execute()
